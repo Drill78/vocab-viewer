@@ -1,3 +1,6 @@
+
+export type UILang = 'zh' | 'en';
+
 export const i18n = {
   zh: {
     title: "词汇表展示",
@@ -5,11 +8,11 @@ export const i18n = {
     allCategories: "全部类别",
     lightMode: "白天模式",
     darkMode: "夜间模式",
-    langSwitch: "UI语言切换",
+    langSwitch: "UI语言",
     zhOnly: "仅中文",
     enOnly: "仅英文",
     both: "中英双语",
-    demoTip: "此演示包含明暗主题、自定义输入框与下拉菜单适配，以及独立的UI语言切换。"
+    demoTip: "明暗主题适配的输入框与下拉菜单 + 独立的 UI 语言切换。"
   },
   en: {
     title: "Vocabulary Viewer",
@@ -21,6 +24,6 @@ export const i18n = {
     zhOnly: "Chinese only",
     enOnly: "English only",
     both: "Bilingual",
-    demoTip: "This demo includes adaptive light/dark themed inputs & selects, and a separate UI language toggle."
+    demoTip: "Inputs & selects adapt to theme + independent UI language toggle."
   }
-};
+} as const;
