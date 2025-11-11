@@ -7,6 +7,23 @@ import { Moon, Sun, Shuffle, RotateCcw, Eye, EyeOff, Info, Download, Link as Lin
 import { ThemedInput, ThemedSelectTrigger } from "./ThemedInputs";
 import { i18n, UILang } from "./i18n";
 
+class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean; err?: any}> {
+  constructor(props: any){ super(props); this.state = { hasError: false }; }
+  static getDerivedStateFromError(err: any){ return { hasError: true, err }; }
+  componentDidCatch(err: any, info: any){ console.error('App crashed:', err, info); }
+  render(){
+    if(this.state.hasError){
+      return (
+        <div className="min-h-screen p-6 text-sm bg-white dark:bg-[#0d1117] text-neutral-900 dark:text-[#c9d1d9]">
+          <h2 className="text-lg font-bold">页面加载遇到问题 / Something went wrong</h2>
+          <p className="mt-2">请刷新页面；若仍出现，请联系老师或将浏览器控制台错误截图发我。</p>
+        </div>
+      );
+    }
+    return this.props.children as any;
+  }
+}
+
 type Vocab = {
   id: string;
   zhTitle?: string;
@@ -216,11 +233,10 @@ export default function App() {
   }
 
   function handleFlipClick(e: React.MouseEvent, id: string) {
-    // 不要在交互元素点击时触发翻转（按钮/链接/表单/summary 等）
     const target = e.target as HTMLElement;
     const interactive = target.closest("button, a, input, select, textarea, label, summary, [data-noflip]");
-    // 选择文本时不翻转（避免误触）
-    const selected = window.getSelection && window.getSelection()!.toString().length > 0;
+    const selObj = typeof window !== 'undefined' && typeof window.getSelection === 'function' ? window.getSelection() : null;
+    const selected = !!(selObj && selObj.toString() && selObj.toString().length > 0);
     if (interactive || selected) return;
     setFlipOpen(prev => ({ ...prev, [id]: !prev[id] }));
   }
@@ -262,186 +278,188 @@ export default function App() {
   const t = (key: keyof typeof i18n.zh) => i18n[uiLang][key];
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#0d1117] text-neutral-900 dark:text-[#c9d1d9] transition-colors">
-      <Toaster richColors position="top-center" />
-      <div className="mx-auto max-w-6xl px-3 sm:px-4 py-[calc(12px+var(--safe-top,0px))] pb-[calc(24px+var(--safe-bottom,0px))]">
-        <header className="sticky top-0 z-20 -mx-3 sm:mx-0 px-3 sm:px-0 pt-2 pb-3 bg-white/80 dark:bg-[#0d1117]/80 backdrop-blur supports-[backdrop-filter]:backdrop-blur rounded-b-2xl">
-          <div className="flex flex-col gap-2 sm:gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">{t('title')}</h1>
-              <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-1">{t('subtitle')}</p>
-            </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              {/* UI language toggle */}
-              <button
-                className="h-10 px-3 py-2 rounded-md border flex items-center gap-2 bg-white text-neutral-800 dark:bg-[#161b22] dark:text-[#c9d1d9]"
-                onClick={()=> setUiLang(uiLang === 'zh' ? 'en' : 'zh')}
-                title={t('uiLang')}
-              >
-                <Globe className="h-4 w-4" /> {uiLang.toUpperCase()}
-              </button>
-              {/* content language mode */}
-              <ThemedSelectTrigger className="h-10" value={lang} onChange={(e:any)=> setLang(e.target.value)}>
-                <option value="zh">{t('zhOnly')}</option>
-                <option value="en">{t('enOnly')}</option>
-                <option value="both">{t('both')}</option>
-              </ThemedSelectTrigger>
-              {/* theme toggle */}
-              <button
-                className="h-10 px-3 py-2 rounded-md border flex items-center gap-2 bg-white text-neutral-800 dark:bg-[#161b22] dark:text-[#c9d1d9]"
-                onClick={()=> setDark(d=>!d)}
-              >
-                {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-                <span className="hidden sm:inline">{dark ? t('light') : t('dark')}</span>
-              </button>
-            </div>
-          </div>
-        </header>
-
-        {/* Import */}
-        <section className="mt-4">
-          <div className="rounded-2xl border p-3 sm:p-4 shadow bg-white dark:bg-[#161b22] dark:border-[#30363d]">
-            <div className="text-sm font-semibold mb-2">{t('dataImport')}</div>
-            <div className="grid gap-3 md:grid-cols-3">
-              <div className="flex items-center gap-2">
-                <input type="file" accept=".csv" ref={fileRef} onChange={(e)=>{ const f=e.target.files?.[0]; if(f) handleFile(f); }} className="block w-full text-sm" />
+    <ErrorBoundary>
+      <div className="min-h-screen bg-white dark:bg-[#0d1117] text-neutral-900 dark:text-[#c9d1d9] transition-colors">
+        <Toaster richColors position="top-center" />
+        <div className="mx-auto max-w-6xl px-3 sm:px-4 py-[calc(12px+var(--safe-top,0px))] pb-[calc(24px+var(--safe-bottom,0px))]">
+          <header className="sticky top-0 z-20 -mx-3 sm:mx-0 px-3 sm:px-0 pt-2 pb-3 bg-white/80 dark:bg-[#0d1117]/80 backdrop-blur supports-[backdrop-filter]:backdrop-blur rounded-b-2xl">
+            <div className="flex flex-col gap-2 sm:gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">{t('title')}</h1>
+                <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-1">{t('subtitle')}</p>
               </div>
-              <div className="flex items-center gap-2 md:col-span-2">
-                <ThemedInput placeholder={t('importFromLink')} ref={urlRef as any} />
-                <button className="h-10 px-3 py-2 rounded-md border text-sm flex items-center gap-1" onClick={()=> handleURL((urlRef.current as any)?.value || "")}>
-                  <LinkIcon className="h-4 w-4"/> {t('importBtn')}
+              <div className="flex items-center gap-2 flex-wrap">
+                {/* UI language toggle */}
+                <button
+                  className="h-10 px-3 py-2 rounded-md border flex items-center gap-2 bg-white text-neutral-800 dark:bg-[#161b22] dark:text-[#c9d1d9]"
+                  onClick={()=> setUiLang(uiLang === 'zh' ? 'en' : 'zh')}
+                  title={t('uiLang')}
+                >
+                  <Globe className="h-4 w-4" /> {uiLang.toUpperCase()}
                 </button>
-                <button className="h-10 px-3 py-2 rounded-md border text-sm" onClick={async()=>{
-                  const sample = "zh_title,en_title,zh_def,en_def,category,tags\\n演绎法,Deduction,从一般到特殊的推理,Reasoning from general to specific,逻辑学,哲学;课堂\\n";
-                  const out = await parseCSVText(sample); setData(out); toast(uiLang==='zh'?'已载入示例':'Sample loaded');
-                }}>{t('sampleBtn')}</button>
+                {/* content language mode */}
+                <ThemedSelectTrigger className="h-10" value={lang} onChange={(e:any)=> setLang(e.target.value)}>
+                  <option value="zh">{t('zhOnly')}</option>
+                  <option value="en">{t('enOnly')}</option>
+                  <option value="both">{t('both')}</option>
+                </ThemedSelectTrigger>
+                {/* theme toggle */}
+                <button
+                  className="h-10 px-3 py-2 rounded-md border flex items-center gap-2 bg-white text-neutral-800 dark:bg-[#161b22] dark:text-[#c9d1d9]"
+                  onClick={()=> setDark(d=>!d)}
+                >
+                  {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                  <span className="hidden sm:inline">{dark ? t('light') : t('dark')}</span>
+                </button>
               </div>
-              {loading && <div className="md:col-span-3 text-sm text-neutral-500">... {progress}%</div>}
             </div>
-          </div>
-        </section>
+          </header>
 
-        {/* Toolbar */}
-        <section className="mt-3 sm:mt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div className="flex-1 flex items-center gap-2">
-            <div className="relative flex-1">
-              <ThemedInput className="w-full h-10 pl-9" placeholder={t('searchPlaceholder')} value={query} onChange={(e)=> setQuery((e.target as any).value)} />
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400"/>
+          {/* Import */}
+          <section className="mt-4">
+            <div className="rounded-2xl border p-3 sm:p-4 shadow bg-white dark:bg-[#161b22] dark:border-[#30363d]">
+              <div className="text-sm font-semibold mb-2">{t('dataImport')}</div>
+              <div className="grid gap-3 md:grid-cols-3">
+                <div className="flex items-center gap-2">
+                  <input type="file" accept=".csv" ref={fileRef} onChange={(e)=>{ const f=e.target.files?.[0]; if(f) handleFile(f); }} className="block w-full text-sm" />
+                </div>
+                <div className="flex items-center gap-2 md:col-span-2">
+                  <ThemedInput placeholder={t('importFromLink')} ref={urlRef as any} />
+                  <button className="h-10 px-3 py-2 rounded-md border text-sm flex items-center gap-1" onClick={()=> handleURL((urlRef.current as any)?.value || "")}>
+                    <LinkIcon className="h-4 w-4"/> {t('importBtn')}
+                  </button>
+                  <button className="h-10 px-3 py-2 rounded-md border text-sm" onClick={async()=>{
+                    const sample = "zh_title,en_title,zh_def,en_def,category,tags\\n演绎法,Deduction,从一般到特殊的推理,Reasoning from general to specific,逻辑学,哲学;课堂\\n";
+                    const out = await parseCSVText(sample); setData(out); toast(uiLang==='zh'?'已载入示例':'Sample loaded');
+                  }}>{t('sampleBtn')}</button>
+                </div>
+                {loading && <div className="md:col-span-3 text-sm text-neutral-500">... {progress}%</div>}
+              </div>
             </div>
-            <ThemedSelectTrigger className="h-10" value={category} onChange={(e:any)=> setCategory(e.target.value)}>
-              {allCategories.map(c => <option key={c} value={c}>{c==="all"? t('allCategories'): c}</option>)}
-            </ThemedSelectTrigger>
-            <ThemedSelectTrigger className="h-10" value={tag} onChange={(e:any)=> setTag(e.target.value)}>
-              {allTags.map(tg => <option key={tg} value={tg}>{tg==="all"? t('allTags'): tg}</option>)}
-            </ThemedSelectTrigger>
-            <ThemedSelectTrigger className="h-10" value={sortBy} onChange={(e:any)=> setSortBy((e.target.value) as any)}>
-              <option value="alpha">{t('sortAlpha')}</option>
-              <option value="recent">{t('sortRecent')}</option>
-              <option value="freq">{t('sortFreq')}</option>
-            </ThemedSelectTrigger>
-            <label className="inline-flex items-center gap-2 text-sm ml-2">
-              <input type="checkbox" checked={favOnly} onChange={(e)=> setFavOnly(e.target.checked)} /> {t('favOnly')}
-            </label>
-          </div>
-          <div className="flex items-center gap-2">
-            <label className="inline-flex items-center gap-2 text-sm">
-              <input type="checkbox" checked={flashMode} onChange={(e)=> setFlashMode(e.target.checked)} /> {t('flashMode')}
-            </label>
-            <button onClick={()=>exportCSV()} className="h-10 px-3 py-2 rounded-md border text-sm flex items-center gap-1">
-              <Download className="h-4 w-4" /> {t('export')}
-            </button>
-            <button onClick={()=>{ setQuery(''); setCategory('all'); setTag('all'); setSortBy('alpha'); setFavOnly(false); }} className="h-10 px-3 py-2 rounded-md border text-sm flex items-center gap-1">
-              <RotateCcw className="h-4 w-4" /> {t('reset')}
-            </button>
-          </div>
-        </section>
+          </section>
 
-        {/* List mode with flip and favorite */}
-        {!flashMode && (
-          <section className="mt-4 grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-            <AnimatePresence>
-              {(filtered.length ? filtered : data).map((v, i) => {
-                const flipped = !!flipOpen[v.id];
-                const starred = !!favs[v.id];
-                return (
-                  <motion.div key={v.id} layout initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
-                    <div className={`relative p-4 sm:p-5 rounded-2xl border shadow ${pickPalette(i)} dark:bg-[#161b22] dark:border-[#30363d]`}
-                         onClick={(e)=> handleFlipClick(e, v.id)}>
-                      <button
-                        className={`absolute right-3 top-3 p-2 rounded-md border text-xs flex items-center justify-center ${starred?'bg-yellow-200/70 dark:bg-yellow-300/20':''}`}
-                        title={starred ? t('starred') : t('unstarred')}
-                        onClick={(e)=> { e.stopPropagation(); toggleFav(v.id); }}
-                      >
-                        <Star className={`h-4 w-4 ${starred? 'fill-yellow-400 text-yellow-500 dark:fill-yellow-300 dark:text-yellow-300':''}`} />
-                      </button>
+          {/* Toolbar */}
+          <section className="mt-3 sm:mt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div className="flex-1 flex items-center gap-2">
+              <div className="relative flex-1">
+                <ThemedInput className="w-full h-10 pl-9" placeholder={t('searchPlaceholder')} value={query} onChange={(e)=> setQuery((e.target as any).value)} />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400"/>
+              </div>
+              <ThemedSelectTrigger className="h-10" value={category} onChange={(e:any)=> setCategory(e.target.value)}>
+                {allCategories.map(c => <option key={c} value={c}>{c==="all"? t('allCategories'): c}</option>)}
+              </ThemedSelectTrigger>
+              <ThemedSelectTrigger className="h-10" value={tag} onChange={(e:any)=> setTag(e.target.value)}>
+                {allTags.map(tg => <option key={tg} value={tg}>{tg==="all"? t('allTags'): tg}</option>)}
+              </ThemedSelectTrigger>
+              <ThemedSelectTrigger className="h-10" value={sortBy} onChange={(e:any)=> setSortBy((e.target.value) as any)}>
+                <option value="alpha">{t('sortAlpha')}</option>
+                <option value="recent">{t('sortRecent')}</option>
+                <option value="freq">{t('sortFreq')}</option>
+              </ThemedSelectTrigger>
+              <label className="inline-flex items-center gap-2 text-sm ml-2">
+                <input type="checkbox" checked={favOnly} onChange={(e)=> setFavOnly(e.target.checked)} /> {t('favOnly')}
+              </label>
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="inline-flex items-center gap-2 text-sm">
+                <input type="checkbox" checked={flashMode} onChange={(e)=> setFlashMode(e.target.checked)} /> {t('flashMode')}
+              </label>
+              <button onClick={()=>exportCSV()} className="h-10 px-3 py-2 rounded-md border text-sm flex items-center gap-1">
+                <Download className="h-4 w-4" /> {t('export')}
+              </button>
+              <button onClick={()=>{ setQuery(''); setCategory('all'); setTag('all'); setSortBy('alpha'); setFavOnly(false); }} className="h-10 px-3 py-2 rounded-md border text-sm flex items-center gap-1">
+                <RotateCcw className="h-4 w-4" /> {t('reset')}
+              </button>
+            </div>
+          </section>
 
-                      <motion.div
-                        key={String(flipped)}
-                        initial={{ rotateY: 180, opacity: 0 }}
-                        animate={{ rotateY: 0, opacity: 1 }}
-                        transition={{ duration: 0.35 }}
-                        className="min-h-[120px] sm:min-h-[140px]"
-                      >
-                        {!flipped ? (
-                          <div className="space-y-2">{renderFront(v)}</div>
-                        ) : (
-                          <div className="space-y-2">{renderBack(v)}</div>
-                        )}
-                      </motion.div>
+          {/* List mode with flip and favorite */}
+          {!flashMode && (
+            <section className="mt-4 grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+              <AnimatePresence>
+                {(filtered.length ? filtered : data).map((v, i) => {
+                  const flipped = !!flipOpen[v.id];
+                  const starred = !!favs[v.id];
+                  return (
+                    <motion.div key={v.id} layout initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
+                      <div className={`relative p-4 sm:p-5 rounded-2xl border shadow ${pickPalette(i)} dark:bg-[#161b22] dark:border-[#30363d]`}
+                           onClick={(e)=> handleFlipClick(e, v.id)}>
+                        <button
+                          className={`absolute right-3 top-3 p-2 rounded-md border text-xs flex items-center justify-center ${starred?'bg-yellow-200/70 dark:bg-yellow-300/20':''}`}
+                          title={starred ? t('starred') : t('unstarred')}
+                          onClick={(e)=> { e.stopPropagation(); toggleFav(v.id); }}
+                        >
+                          <Star className={`h-4 w-4 ${starred? 'fill-yellow-400 text-yellow-500 dark:fill-yellow-300 dark:text-yellow-300':''}`} />
+                        </button>
+
+                        <motion.div
+                          key={String(flipped)}
+                          initial={{ rotateY: 180, opacity: 0 }}
+                          animate={{ rotateY: 0, opacity: 1 }}
+                          transition={{ duration: 0.35 }}
+                          className="min-h-[120px] sm:min-h-[140px]"
+                        >
+                          {!flipped ? (
+                            <div className="space-y-2">{renderFront(v)}</div>
+                          ) : (
+                            <div className="space-y-2">{renderBack(v)}</div>
+                          )}
+                        </motion.div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+            </section>
+          )}
+
+          {/* Flashcards */}
+          {flashMode && (
+            <section className="mt-6">
+              <div className="rounded-2xl border p-6 shadow bg-white dark:bg-[#161b22] dark:border-[#30363d]">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="text-sm text-neutral-500">{t('count')} {studyList.length} {uiLang==='zh'? '项 · 第': t('item')}{studyList.length ? (idx % studyList.length)+1 : 0}{t('of')}{studyList.length}</div>
+                  <div className="flex items-center gap-2">
+                    <button className="h-10 px-3 py-2 rounded-md border text-sm flex items-center gap-1" onClick={()=> setShowBack(s=>!s)}>
+                      {showBack ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      <span className="hidden sm:inline">{showBack ? t('hideBack') : t('showBack')}</span>
+                    </button>
+                    <button className="h-10 px-3 py-2 rounded-md bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 text-sm" onClick={()=> setIdx(i => (i+1) % Math.max(1, studyList.length))}>
+                      <Shuffle className="h-4 w-4" /> <span className="hidden sm:inline">{t('next')}</span>
+                    </button>
+                  </div>
+                </div>
+
+                {current ? (
+                  <motion.div key={current.id + String(showBack)} initial={{ rotateY: 180, opacity: 0 }} animate={{ rotateY: 0, opacity: 1 }} transition={{ duration: 0.35 }} className="grid gap-4 text-center select-none">
+                    {!showBack ? (
+                      <div className="space-y-2">{renderFront(current)}</div>
+                    ) : (
+                      <div className="max-w-2xl mx-auto space-y-2">{renderBack(current)}</div>
+                    )}
+                    <div className="flex items-center justify-center gap-3 pt-2">
+                      <button className="h-10 px-3 py-2 rounded-md border text-sm" onClick={()=> setIdx(i => (i - 1 + Math.max(1, studyList.length)) % Math.max(1, studyList.length))}>{t('prev')}</button>
+                      <button className="h-10 px-3 py-2 rounded-md border text-sm" onClick={()=> setIdx(i => (i + 1) % Math.max(1, studyList.length))}>{t('next')}</button>
                     </div>
                   </motion.div>
-                );
-              })}
-            </AnimatePresence>
-          </section>
-        )}
-
-        {/* Flashcards */}
-        {flashMode && (
-          <section className="mt-6">
-            <div className="rounded-2xl border p-6 shadow bg-white dark:bg-[#161b22] dark:border-[#30363d]">
-              <div className="flex items-center justify-between mb-3">
-                <div className="text-sm text-neutral-500">{t('count')} {studyList.length} {uiLang==='zh'? '项 · 第': t('item')}{studyList.length ? (idx % studyList.length)+1 : 0}{t('of')}{studyList.length}</div>
-                <div className="flex items-center gap-2">
-                  <button className="h-10 px-3 py-2 rounded-md border text-sm flex items-center gap-1" onClick={()=> setShowBack(s=>!s)}>
-                    {showBack ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    <span className="hidden sm:inline">{showBack ? t('hideBack') : t('showBack')}</span>
-                  </button>
-                  <button className="h-10 px-3 py-2 rounded-md bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 text-sm" onClick={()=> setIdx(i => (i+1) % Math.max(1, studyList.length))}>
-                    <Shuffle className="h-4 w-4" /> <span className="hidden sm:inline">{t('next')}</span>
-                  </button>
-                </div>
+                ) : (
+                  <div className="text-center text-neutral-500">{t('empty')}</div>
+                )}
               </div>
+            </section>
+          )}
 
-              {current ? (
-                <motion.div key={current.id + String(showBack)} initial={{ rotateY: 180, opacity: 0 }} animate={{ rotateY: 0, opacity: 1 }} transition={{ duration: 0.35 }} className="grid gap-4 text-center select-none">
-                  {!showBack ? (
-                    <div className="space-y-2">{renderFront(current)}</div>
-                  ) : (
-                    <div className="max-w-2xl mx-auto space-y-2">{renderBack(current)}</div>
-                  )}
-                  <div className="flex items-center justify-center gap-3 pt-2">
-                    <button className="h-10 px-3 py-2 rounded-md border text-sm" onClick={()=> setIdx(i => (i - 1 + Math.max(1, studyList.length)) % Math.max(1, studyList.length))}>{t('prev')}</button>
-                    <button className="h-10 px-3 py-2 rounded-md border text-sm" onClick={()=> setIdx(i => (i + 1) % Math.max(1, studyList.length))}>{t('next')}</button>
-                  </div>
-                </motion.div>
-              ) : (
-                <div className="text-center text-neutral-500">{t('empty')}</div>
-              )}
-            </div>
+          {/* About */}
+          <section className="mt-8">
+            <details>
+              <summary className="cursor-pointer select-none text-sm flex items-center gap-1"><Info className="h-4 w-4"/> {t('about')}</summary>
+              <div className="mt-3 space-y-2 text-sm leading-6">
+                <p>{t('aboutText')}</p>
+              </div>
+            </details>
           </section>
-        )}
-
-        {/* About */}
-        <section className="mt-8">
-          <details>
-            <summary className="cursor-pointer select-none text-sm flex items-center gap-1"><Info className="h-4 w-4"/> {t('about')}</summary>
-            <div className="mt-3 space-y-2 text-sm leading-6">
-              <p>{t('aboutText')}</p>
-            </div>
-          </details>
-        </section>
+        </div>
       </div>
-    </div>
+    </ErrorBoundary>
   );
 }
