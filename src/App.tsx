@@ -217,21 +217,26 @@ export default function App() {
     setFlipOpen(prev => ({ ...prev, [id]: !prev[id] }));
   }
 
+  /** 正面：标题 + 基础释义（中/英按模式显示） */
   function renderFront(v: Vocab) {
     return (
-      <div className="space-y-1">
-        {(lang === "zh" || lang === "both") && v.zhTitle && <div className="text-lg font-bold">{v.zhTitle}</div>}
-        {(lang === "en" || lang === "both") && v.enTitle && <div className="text-sm text-neutral-600 dark:text-neutral-400">{v.enTitle}</div>}
-        {(!(v.zhTitle||v.enTitle)) && <div className="text-sm text-neutral-500">（no title）</div>}
+      <div className="space-y-2">
+        <div className="space-y-1">
+          {(lang === "zh" || lang === "both") && v.zhTitle && <div className="text-lg font-bold">{v.zhTitle}</div>}
+          {(lang === "en" || lang === "both") && v.enTitle && <div className="text-sm text-neutral-600 dark:text-neutral-400">{v.enTitle}</div>}
+          {(!(v.zhTitle||v.enTitle)) && <div className="text-sm text-neutral-500">（no title）</div>}
+        </div>
+        {(lang === "zh" || lang === "both") && v.zhDef && <p className="text-sm leading-relaxed">{v.zhDef}</p>}
+        {(lang === "en" || lang === "both") && v.enDef && <p className="text-xs text-neutral-700 dark:text-neutral-400">{v.enDef}</p>}
       </div>
     );
   }
+
+  /** 背面：更多信息（例句、详情、类别/标签） */
   function renderBack(v: Vocab) {
     return (
       <div className="space-y-2 text-left">
-        {(lang === "zh" || lang === "both") && v.zhDef && <p className="text-sm leading-relaxed">{v.zhDef}</p>}
-        {(lang === "en" || lang === "both") && v.enDef && <p className="text-xs text-neutral-600 dark:text-neutral-400">{v.enDef}</p>}
-        {v.example && <p className="text-xs italic text-neutral-500 dark:text-neutral-400 mt-1">“{v.example}”</p>}
+        {v.example && <p className="text-xs italic text-neutral-500 dark:text-neutral-400">“{v.example}”</p>}
         {v.details && <details className="text-xs"><summary className="cursor-pointer">详情 / Details</summary><div className="mt-1 whitespace-pre-wrap">{v.details}</div></details>}
         <div className="flex flex-wrap gap-2">
           {v.category && <span className="px-2 py-0.5 rounded-full bg-neutral-200/70 dark:bg-[#161b22] text-xs">{v.category}</span>}
@@ -366,7 +371,7 @@ export default function App() {
                           initial={{ rotateY: 180, opacity: 0 }}
                           animate={{ rotateY: 0, opacity: 1 }}
                           transition={{ duration: 0.35 }}
-                          className="min-h-[140px]"
+                          className=""
                         >
                           {!flipped ? (
                             <div className="space-y-2">{renderFront(v)}</div>
