@@ -5,3 +5,8 @@
 
 :root { color-scheme: light dark; }
 html { scroll-behavior: smooth; }
+/* Card palette helpers */
+.card-p-0 { padding: 0.75rem; }
+.card-rounded { border-radius: 1rem; }
+.card-border { border: 1px solid rgba(0,0,0,0.08); }
+.card-border-dark { border: 1px solid #30363d; }
