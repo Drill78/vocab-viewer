@@ -1,0 +1,6 @@
+
+[
+  { "title": "逻辑学（样例）", "path": "/data/vocab.csv", "description": "基础样例，演绎/归纳等" },
+  { "title": "哲学术语（样例）", "path": "/data/philosophy.csv", "description": "常见哲学术语，供教学演示" },
+  { "title": "课堂通用词（样例）", "path": "/data/classroom.csv", "description": "课堂常用表达，鼓励初次练习" }
+]
