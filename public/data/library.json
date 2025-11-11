@@ -1,6 +1,7 @@
 
 [
-  { "title": "逻辑学（样例）", "path": "/data/vocab.csv", "description": "基础样例，演绎/归纳等" },
-  { "title": "哲学术语（样例）", "path": "/data/philosophy.csv", "description": "常见哲学术语，供教学演示" },
-  { "title": "课堂通用词（样例）", "path": "/data/classroom.csv", "description": "课堂常用表达，鼓励初次练习" }
+  { "title": "逻辑学术语", "path": "/data/logic_terms.csv", "description": "基础演示示例" },
+  { "title": "哲学流派", "path": "/data/philosophy_ideologies.csv", "description": "基础演示示例" },
+  { "title": "浮游藻类的图像识别", "path": "/data/algae_plankton_ai_glossary_filled.csv", "description": "暂时拿来测试用的" }
+  { "title": "pai语百科", "path": "/data/pai_language.csv", "description": "感受pai语的魅力" },
 ]
