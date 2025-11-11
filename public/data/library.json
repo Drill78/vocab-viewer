@@ -2,6 +2,6 @@
 [
   { "title": "逻辑学术语", "path": "/data/logic_terms.csv", "description": "基础演示示例" },
   { "title": "哲学流派", "path": "/data/philosophy_ideologies.csv", "description": "基础演示示例" },
-  { "title": "浮游藻类的图像识别", "path": "/data/algae_plankton_ai_glossary_filled.csv", "description": "暂时拿来测试用的" }
-  { "title": "pai语百科", "path": "/data/pai_language.csv", "description": "感受pai语的魅力" },
+  { "title": "浮游藻类的图像识别", "path": "/data/algae_plankton_ai_glossary_filled.csv", "description": "暂时拿来测试用的" },
+  { "title": "pai语百科", "path": "/data/pai_language.csv", "description": "感受pai语的魅力" }
 ]
