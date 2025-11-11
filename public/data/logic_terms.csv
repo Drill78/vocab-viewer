@@ -1,0 +1,15 @@
+zh_title,en_title,zh_def,en_def,category,tags,example,details
+演绎法,Deduction,从一般到特殊的推理,Reasoning from general to specific,逻辑学,哲学;推理,三段论是典型演绎形式,由一般原理推出个别结论的方式
+归纳法,Induction,由特殊到一般的推理,Generalizing from specific cases to universal rules,逻辑学,哲学;科学方法,观察多只白天鹅皆为白色→推测所有天鹅为白色,经验性强但易受样本偏差影响
+溯因法,Abduction,从结果推测最可能的原因,Inferring the most likely cause from an observation,逻辑学,哲学;科学推理,看到草地湿→推测昨夜下雨,常用于假设形成与科学推断
+命题,Proposition,表达真假判断的陈述句,A statement that expresses a judgment of truth or falsehood,逻辑学,语言;逻辑符号,“雪是白的”是一个命题,是逻辑推理的基本单位
+谓词逻辑,Predicate Logic,研究对象与属性关系的逻辑系统,Logic concerning relationships between subjects and predicates,逻辑学,形式逻辑;哲学,“所有人都是会死的”可形式化为 ∀x(Person(x)→Mortal(x)),比命题逻辑更具表达力
+命题逻辑,Propositional Logic,研究命题之间逻辑关系的系统,Logic dealing with relations among propositions,逻辑学,形式逻辑,若P则Q；P为真→Q为真,基础的符号逻辑系统
+真值表,Truth Table,列出命题逻辑所有可能真值组合的表,Table showing all possible truth values of propositions,逻辑学,符号逻辑;教学,与、或、非三种逻辑运算的真值表,用于检验逻辑公式是否永真
+逻辑谬误,Logical Fallacy,推理中导致结论错误的隐含缺陷,A flaw in reasoning leading to invalid conclusion,逻辑学,论证;哲学,“诉诸权威”属于常见谬误,分为形式与非形式两类
+模态逻辑,Modal Logic,引入必然与可能等模态概念的逻辑系统,Logic incorporating notions like necessity and possibility,逻辑学,哲学;语言逻辑,“必然真理”“可能世界”,用于哲学、语言与AI推理研究
+非形式逻辑,Informal Logic,研究自然语言推理与论证的合理性,Logic studying argumentation in natural language,逻辑学,哲学;语言,分析日常论证中隐含前提,重视语境与修辞因素
+符号逻辑,Symbolic Logic,使用符号系统表示和推演逻辑关系,Logic using symbols to formalize reasoning,逻辑学,形式逻辑;数学,P→Q 等逻辑公式表达蕴含关系,现代逻辑与计算机逻辑基础
+反证法,Reductio ad Absurdum,假设命题否定并推出矛盾以证明原命题,Assuming the negation of a statement to derive contradiction,逻辑学,数学;哲学,假设√2是有理数→推导出矛盾→原命题成立,常用于证明命题的真
+三段论,Syllogism,包含大前提、小前提与结论的演绎推理形式,"Deductive reasoning with major premise, minor premise, and conclusion",逻辑学,哲学;推理,所有人都会死；苏格拉底是人；所以苏格拉底会死,亚里士多德逻辑核心形式
+真理函数,Truth Function,命题的真假依赖于其组成命题真值,A proposition's truth depends on its components' truth values,逻辑学,数学逻辑,合取、析取、否定等均为真理函数,逻辑计算的基础概念
