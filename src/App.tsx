@@ -110,6 +110,8 @@ export default function App() {
 
   useEffect(()=>{
     document.documentElement.classList.toggle("dark", dark);
+    document.documentElement.style.setProperty("--safe-top", "env(safe-area-inset-top)");
+    document.documentElement.style.setProperty("--safe-bottom", "env(safe-area-inset-bottom)");
     save(PREF_KEY+":dark", dark);
   }, [dark]);
   useEffect(()=> save(PREF_KEY+":uiLang", uiLang), [uiLang]);
@@ -213,7 +215,13 @@ export default function App() {
     });
   }
 
-  function toggleFlip(id: string) {
+  function handleFlipClick(e: React.MouseEvent, id: string) {
+    // 不要在交互元素点击时触发翻转（按钮/链接/表单/summary 等）
+    const target = e.target as HTMLElement;
+    const interactive = target.closest("button, a, input, select, textarea, label, summary, [data-noflip]");
+    // 选择文本时不翻转（避免误触）
+    const selected = window.getSelection && window.getSelection()!.toString().length > 0;
+    if (interactive || selected) return;
     setFlipOpen(prev => ({ ...prev, [id]: !prev[id] }));
   }
 
@@ -222,12 +230,12 @@ export default function App() {
     return (
       <div className="space-y-2">
         <div className="space-y-1">
-          {(lang === "zh" || lang === "both") && v.zhTitle && <div className="text-lg font-bold">{v.zhTitle}</div>}
-          {(lang === "en" || lang === "both") && v.enTitle && <div className="text-sm text-neutral-600 dark:text-neutral-400">{v.enTitle}</div>}
+          {(lang === "zh" || lang === "both") && v.zhTitle && <div className="text-lg sm:text-xl font-bold">{v.zhTitle}</div>}
+          {(lang === "en" || lang === "both") && v.enTitle && <div className="text-sm sm:text-base text-neutral-600 dark:text-neutral-400">{v.enTitle}</div>}
           {(!(v.zhTitle||v.enTitle)) && <div className="text-sm text-neutral-500">（no title）</div>}
         </div>
-        {(lang === "zh" || lang === "both") && v.zhDef && <p className="text-sm leading-relaxed">{v.zhDef}</p>}
-        {(lang === "en" || lang === "both") && v.enDef && <p className="text-xs text-neutral-700 dark:text-neutral-400">{v.enDef}</p>}
+        {(lang === "zh" || lang === "both") && v.zhDef && <p className="text-[13px] sm:text-sm leading-relaxed">{v.zhDef}</p>}
+        {(lang === "en" || lang === "both") && v.enDef && <p className="text-xs sm:text-[13px] text-neutral-700 dark:text-neutral-400">{v.enDef}</p>}
       </div>
     );
   }
@@ -235,9 +243,14 @@ export default function App() {
   /** 背面：更多信息（例句、详情、类别/标签） */
   function renderBack(v: Vocab) {
     return (
-      <div className="space-y-2 text-left">
-        {v.example && <p className="text-xs italic text-neutral-500 dark:text-neutral-400">“{v.example}”</p>}
-        {v.details && <details className="text-xs"><summary className="cursor-pointer">详情 / Details</summary><div className="mt-1 whitespace-pre-wrap">{v.details}</div></details>}
+      <div className="space-y-2 text-left" data-noflip>
+        {v.example && <p className="text-xs sm:text-sm italic text-neutral-500 dark:text-neutral-400">“{v.example}”</p>}
+        {v.details && (
+          <details className="text-xs sm:text-sm" data-noflip>
+            <summary className="cursor-pointer select-none" onClick={(e)=> e.stopPropagation()}>详情 / Details</summary>
+            <div className="mt-1 whitespace-pre-wrap">{v.details}</div>
+          </details>
+        )}
         <div className="flex flex-wrap gap-2">
           {v.category && <span className="px-2 py-0.5 rounded-full bg-neutral-200/70 dark:bg-[#161b22] text-xs">{v.category}</span>}
           {(v.tags||[]).map((t,i)=>(<span key={i} className="px-2 py-0.5 rounded-full border text-xs">{t}</span>))}
@@ -251,49 +264,43 @@ export default function App() {
   return (
     <div className="min-h-screen bg-white dark:bg-[#0d1117] text-neutral-900 dark:text-[#c9d1d9] transition-colors">
       <Toaster richColors position="top-center" />
-      <div className="mx-auto max-w-6xl px-4 py-6">
-        <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-3xl font-extrabold tracking-tight">{t('title')}</h1>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">{t('subtitle')}</p>
-          </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            {/* UI language toggle */}
-            <button
-              className="px-3 py-2 rounded-md border flex items-center gap-2 bg-white text-neutral-800 dark:bg-[#161b22] dark:text-[#c9d1d9]"
-              onClick={()=> setUiLang(uiLang === 'zh' ? 'en' : 'zh')}
-              title={t('uiLang')}
-            >
-              <Globe className="h-4 w-4" /> {uiLang.toUpperCase()}
-            </button>
-            {/* content language mode */}
-            <ThemedSelectTrigger value={lang} onChange={(e:any)=> setLang(e.target.value)}>
-              <option value="zh">{t('zhOnly')}</option>
-              <option value="en">{t('enOnly')}</option>
-              <option value="both">{t('both')}</option>
-            </ThemedSelectTrigger>
-            {/* theme toggle */}
-            <button
-              className="px-3 py-2 rounded-md border flex items-center gap-2 bg-white text-neutral-800 dark:bg-[#161b22] dark:text-[#c9d1d9]"
-              onClick={()=> setDark(d=>!d)}
-            >
-              {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-              {dark ? t('light') : t('dark')}
-            </button>
-            {/* export */}
-            <button onClick={()=>exportCSV()} className="px-3 py-2 rounded-md border text-sm flex items-center gap-1">
-              <Download className="h-4 w-4" /> {t('export')}
-            </button>
-            {/* reset */}
-            <button onClick={()=>{ setQuery(''); setCategory('all'); setTag('all'); setSortBy('alpha'); setFavOnly(false); }} className="px-3 py-2 rounded-md border text-sm flex items-center gap-1">
-              <RotateCcw className="h-4 w-4" /> {t('reset')}
-            </button>
+      <div className="mx-auto max-w-6xl px-3 sm:px-4 py-[calc(12px+var(--safe-top,0px))] pb-[calc(24px+var(--safe-bottom,0px))]">
+        <header className="sticky top-0 z-20 -mx-3 sm:mx-0 px-3 sm:px-0 pt-2 pb-3 bg-white/80 dark:bg-[#0d1117]/80 backdrop-blur supports-[backdrop-filter]:backdrop-blur rounded-b-2xl">
+          <div className="flex flex-col gap-2 sm:gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">{t('title')}</h1>
+              <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-1">{t('subtitle')}</p>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              {/* UI language toggle */}
+              <button
+                className="h-10 px-3 py-2 rounded-md border flex items-center gap-2 bg-white text-neutral-800 dark:bg-[#161b22] dark:text-[#c9d1d9]"
+                onClick={()=> setUiLang(uiLang === 'zh' ? 'en' : 'zh')}
+                title={t('uiLang')}
+              >
+                <Globe className="h-4 w-4" /> {uiLang.toUpperCase()}
+              </button>
+              {/* content language mode */}
+              <ThemedSelectTrigger className="h-10" value={lang} onChange={(e:any)=> setLang(e.target.value)}>
+                <option value="zh">{t('zhOnly')}</option>
+                <option value="en">{t('enOnly')}</option>
+                <option value="both">{t('both')}</option>
+              </ThemedSelectTrigger>
+              {/* theme toggle */}
+              <button
+                className="h-10 px-3 py-2 rounded-md border flex items-center gap-2 bg-white text-neutral-800 dark:bg-[#161b22] dark:text-[#c9d1d9]"
+                onClick={()=> setDark(d=>!d)}
+              >
+                {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                <span className="hidden sm:inline">{dark ? t('light') : t('dark')}</span>
+              </button>
+            </div>
           </div>
         </header>
 
         {/* Import */}
         <section className="mt-4">
-          <div className="rounded-2xl border p-4 shadow bg-white dark:bg-[#161b22] dark:border-[#30363d]">
+          <div className="rounded-2xl border p-3 sm:p-4 shadow bg-white dark:bg-[#161b22] dark:border-[#30363d]">
             <div className="text-sm font-semibold mb-2">{t('dataImport')}</div>
             <div className="grid gap-3 md:grid-cols-3">
               <div className="flex items-center gap-2">
@@ -301,10 +308,10 @@ export default function App() {
               </div>
               <div className="flex items-center gap-2 md:col-span-2">
                 <ThemedInput placeholder={t('importFromLink')} ref={urlRef as any} />
-                <button className="px-3 py-2 rounded-md border text-sm flex items-center gap-1" onClick={()=> handleURL((urlRef.current as any)?.value || "")}>
+                <button className="h-10 px-3 py-2 rounded-md border text-sm flex items-center gap-1" onClick={()=> handleURL((urlRef.current as any)?.value || "")}>
                   <LinkIcon className="h-4 w-4"/> {t('importBtn')}
                 </button>
-                <button className="px-3 py-2 rounded-md border text-sm" onClick={async()=>{
+                <button className="h-10 px-3 py-2 rounded-md border text-sm" onClick={async()=>{
                   const sample = "zh_title,en_title,zh_def,en_def,category,tags\\n演绎法,Deduction,从一般到特殊的推理,Reasoning from general to specific,逻辑学,哲学;课堂\\n";
                   const out = await parseCSVText(sample); setData(out); toast(uiLang==='zh'?'已载入示例':'Sample loaded');
                 }}>{t('sampleBtn')}</button>
@@ -315,19 +322,19 @@ export default function App() {
         </section>
 
         {/* Toolbar */}
-        <section className="mt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <section className="mt-3 sm:mt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="flex-1 flex items-center gap-2">
             <div className="relative flex-1">
-              <ThemedInput className="w-full pl-9" placeholder={t('searchPlaceholder')} value={query} onChange={(e)=> setQuery((e.target as any).value)} />
+              <ThemedInput className="w-full h-10 pl-9" placeholder={t('searchPlaceholder')} value={query} onChange={(e)=> setQuery((e.target as any).value)} />
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400"/>
             </div>
-            <ThemedSelectTrigger value={category} onChange={(e:any)=> setCategory(e.target.value)}>
+            <ThemedSelectTrigger className="h-10" value={category} onChange={(e:any)=> setCategory(e.target.value)}>
               {allCategories.map(c => <option key={c} value={c}>{c==="all"? t('allCategories'): c}</option>)}
             </ThemedSelectTrigger>
-            <ThemedSelectTrigger value={tag} onChange={(e:any)=> setTag(e.target.value)}>
+            <ThemedSelectTrigger className="h-10" value={tag} onChange={(e:any)=> setTag(e.target.value)}>
               {allTags.map(tg => <option key={tg} value={tg}>{tg==="all"? t('allTags'): tg}</option>)}
             </ThemedSelectTrigger>
-            <ThemedSelectTrigger value={sortBy} onChange={(e:any)=> setSortBy((e.target.value) as any)}>
+            <ThemedSelectTrigger className="h-10" value={sortBy} onChange={(e:any)=> setSortBy((e.target.value) as any)}>
               <option value="alpha">{t('sortAlpha')}</option>
               <option value="recent">{t('sortRecent')}</option>
               <option value="freq">{t('sortFreq')}</option>
@@ -340,46 +347,47 @@ export default function App() {
             <label className="inline-flex items-center gap-2 text-sm">
               <input type="checkbox" checked={flashMode} onChange={(e)=> setFlashMode(e.target.checked)} /> {t('flashMode')}
             </label>
+            <button onClick={()=>exportCSV()} className="h-10 px-3 py-2 rounded-md border text-sm flex items-center gap-1">
+              <Download className="h-4 w-4" /> {t('export')}
+            </button>
+            <button onClick={()=>{ setQuery(''); setCategory('all'); setTag('all'); setSortBy('alpha'); setFavOnly(false); }} className="h-10 px-3 py-2 rounded-md border text-sm flex items-center gap-1">
+              <RotateCcw className="h-4 w-4" /> {t('reset')}
+            </button>
           </div>
         </section>
 
         {/* List mode with flip and favorite */}
         {!flashMode && (
-          <section className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <section className="mt-4 grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             <AnimatePresence>
               {(filtered.length ? filtered : data).map((v, i) => {
                 const flipped = !!flipOpen[v.id];
                 const starred = !!favs[v.id];
                 return (
                   <motion.div key={v.id} layout initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
-                    <div className={`relative h-full p-4 rounded-2xl border shadow ${pickPalette(i)} dark:bg-[#161b22] dark:border-[#30363d]`}>
+                    <div className={`relative p-4 sm:p-5 rounded-2xl border shadow ${pickPalette(i)} dark:bg-[#161b22] dark:border-[#30363d]`}
+                         onClick={(e)=> handleFlipClick(e, v.id)}>
                       <button
-                        className={`absolute right-3 top-3 p-1 rounded-md border text-xs flex items-center gap-1 ${starred?'bg-yellow-200/70 dark:bg-yellow-300/20':''}`}
+                        className={`absolute right-3 top-3 p-2 rounded-md border text-xs flex items-center justify-center ${starred?'bg-yellow-200/70 dark:bg-yellow-300/20':''}`}
                         title={starred ? t('starred') : t('unstarred')}
                         onClick={(e)=> { e.stopPropagation(); toggleFav(v.id); }}
                       >
                         <Star className={`h-4 w-4 ${starred? 'fill-yellow-400 text-yellow-500 dark:fill-yellow-300 dark:text-yellow-300':''}`} />
                       </button>
 
-                      <div
-                        className="cursor-pointer select-none"
-                        onClick={()=> toggleFlip(v.id)}
-                        title={flipped ? (t('hideBack')) : (t('showBack'))}
+                      <motion.div
+                        key={String(flipped)}
+                        initial={{ rotateY: 180, opacity: 0 }}
+                        animate={{ rotateY: 0, opacity: 1 }}
+                        transition={{ duration: 0.35 }}
+                        className="min-h-[120px] sm:min-h-[140px]"
                       >
-                        <motion.div
-                          key={String(flipped)}
-                          initial={{ rotateY: 180, opacity: 0 }}
-                          animate={{ rotateY: 0, opacity: 1 }}
-                          transition={{ duration: 0.35 }}
-                          className=""
-                        >
-                          {!flipped ? (
-                            <div className="space-y-2">{renderFront(v)}</div>
-                          ) : (
-                            <div className="space-y-2">{renderBack(v)}</div>
-                          )}
-                        </motion.div>
-                      </div>
+                        {!flipped ? (
+                          <div className="space-y-2">{renderFront(v)}</div>
+                        ) : (
+                          <div className="space-y-2">{renderBack(v)}</div>
+                        )}
+                      </motion.div>
                     </div>
                   </motion.div>
                 );
@@ -395,12 +403,12 @@ export default function App() {
               <div className="flex items-center justify-between mb-3">
                 <div className="text-sm text-neutral-500">{t('count')} {studyList.length} {uiLang==='zh'? '项 · 第': t('item')}{studyList.length ? (idx % studyList.length)+1 : 0}{t('of')}{studyList.length}</div>
                 <div className="flex items-center gap-2">
-                  <button className="px-3 py-2 rounded-md border text-sm flex items-center gap-1" onClick={()=> setShowBack(s=>!s)}>
+                  <button className="h-10 px-3 py-2 rounded-md border text-sm flex items-center gap-1" onClick={()=> setShowBack(s=>!s)}>
                     {showBack ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    {showBack ? t('hideBack') : t('showBack')}
+                    <span className="hidden sm:inline">{showBack ? t('hideBack') : t('showBack')}</span>
                   </button>
-                  <button className="px-3 py-2 rounded-md bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 text-sm" onClick={()=> setIdx(i => (i+1) % Math.max(1, studyList.length))}>
-                    <Shuffle className="h-4 w-4" /> {t('next')}
+                  <button className="h-10 px-3 py-2 rounded-md bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 text-sm" onClick={()=> setIdx(i => (i+1) % Math.max(1, studyList.length))}>
+                    <Shuffle className="h-4 w-4" /> <span className="hidden sm:inline">{t('next')}</span>
                   </button>
                 </div>
               </div>
@@ -413,8 +421,8 @@ export default function App() {
                     <div className="max-w-2xl mx-auto space-y-2">{renderBack(current)}</div>
                   )}
                   <div className="flex items-center justify-center gap-3 pt-2">
-                    <button className="px-3 py-2 rounded-md border text-sm" onClick={()=> setIdx(i => (i - 1 + Math.max(1, studyList.length)) % Math.max(1, studyList.length))}>{t('prev')}</button>
-                    <button className="px-3 py-2 rounded-md border text-sm" onClick={()=> setIdx(i => (i + 1) % Math.max(1, studyList.length))}>{t('next')}</button>
+                    <button className="h-10 px-3 py-2 rounded-md border text-sm" onClick={()=> setIdx(i => (i - 1 + Math.max(1, studyList.length)) % Math.max(1, studyList.length))}>{t('prev')}</button>
+                    <button className="h-10 px-3 py-2 rounded-md border text-sm" onClick={()=> setIdx(i => (i + 1) % Math.max(1, studyList.length))}>{t('next')}</button>
                   </div>
                 </motion.div>
               ) : (
