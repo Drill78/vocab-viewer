@@ -41,7 +41,7 @@ type Vocab = {
 
 const STORAGE_KEY = "vocab3_3.data";
 const PREF_KEY = "vocab3_3.prefs";
-const DEFAULT_REMOTE_URL = "/data/vocab.csv";
+const DEFAULT_REMOTE_URL = "/data/logic_terms.csv";
 
 type LangMode = "zh" | "en" | "both";
 
