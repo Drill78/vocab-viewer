@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast, Toaster } from "sonner";
 import Papa from "papaparse";
-import { Moon, Sun, Shuffle, RotateCcw, Eye, EyeOff, Info, Download, Link as LinkIcon, Search, Globe } from "lucide-react";
+import { Moon, Sun, Shuffle, RotateCcw, Eye, EyeOff, Info, Download, Link as LinkIcon, Search, Globe, Star } from "lucide-react";
 import { ThemedInput, ThemedSelectTrigger } from "./ThemedInputs";
 import { i18n, UILang } from "./i18n";
 
@@ -22,8 +22,8 @@ type Vocab = {
   addedAt?: number;
 };
 
-const STORAGE_KEY = "vocab3.data";
-const PREF_KEY = "vocab3.prefs";
+const STORAGE_KEY = "vocab3_3.data";
+const PREF_KEY = "vocab3_3.prefs";
 const DEFAULT_REMOTE_URL = "/data/vocab.csv";
 
 type LangMode = "zh" | "en" | "both";
@@ -101,6 +101,9 @@ export default function App() {
   const [idx, setIdx] = useState(0);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [flipOpen, setFlipOpen] = useState<Record<string, boolean>>({});
+  const [favs, setFavs] = useState<Record<string, true>>(()=> load(PREF_KEY+":favs", {}));
+  const [favOnly, setFavOnly] = useState<boolean>(()=> load(PREF_KEY+":favOnly", false));
 
   const urlRef = useRef<HTMLInputElement|null>(null);
   const fileRef = useRef<HTMLInputElement|null>(null);
@@ -112,6 +115,8 @@ export default function App() {
   useEffect(()=> save(PREF_KEY+":uiLang", uiLang), [uiLang]);
   useEffect(()=> save(PREF_KEY+":lang", lang), [lang]);
   useEffect(()=> save(STORAGE_KEY, data), [data]);
+  useEffect(()=> save(PREF_KEY+":favs", favs), [favs]);
+  useEffect(()=> save(PREF_KEY+":favOnly", favOnly), [favOnly]);
 
   useEffect(()=>{
     (async ()=>{
@@ -153,6 +158,7 @@ export default function App() {
     }
     if (category !== "all") arr = arr.filter(v => (v.category||"") === category);
     if (tag !== "all") arr = arr.filter(v => v.tags?.some(t => t === tag));
+    if (favOnly) arr = arr.filter(v => !!favs[v.id]);
 
     let out = [...arr];
     if (sortBy === "alpha") {
@@ -163,7 +169,7 @@ export default function App() {
       out.sort((a,b)=> (b.frequency||0) - (a.frequency||0));
     }
     return out;
-  }, [data, query, category, tag, sortBy]);
+  }, [data, query, category, tag, sortBy, favOnly, favs]);
 
   const studyList = filtered.length ? filtered : data;
   const current = studyList[idx % Math.max(1, studyList.length)] || null;
@@ -198,6 +204,19 @@ export default function App() {
     URL.revokeObjectURL(url);
   }
 
+  function toggleFav(id: string) {
+    setFavs(prev => {
+      const n = { ...prev };
+      if (n[id]) { delete n[id]; }
+      else { n[id] = true; }
+      return n;
+    });
+  }
+
+  function toggleFlip(id: string) {
+    setFlipOpen(prev => ({ ...prev, [id]: !prev[id] }));
+  }
+
   function renderFront(v: Vocab) {
     return (
       <div className="space-y-1">
@@ -209,10 +228,11 @@ export default function App() {
   }
   function renderBack(v: Vocab) {
     return (
-      <div className="space-y-2">
+      <div className="space-y-2 text-left">
         {(lang === "zh" || lang === "both") && v.zhDef && <p className="text-sm leading-relaxed">{v.zhDef}</p>}
         {(lang === "en" || lang === "both") && v.enDef && <p className="text-xs text-neutral-600 dark:text-neutral-400">{v.enDef}</p>}
         {v.example && <p className="text-xs italic text-neutral-500 dark:text-neutral-400 mt-1">“{v.example}”</p>}
+        {v.details && <details className="text-xs"><summary className="cursor-pointer">详情 / Details</summary><div className="mt-1 whitespace-pre-wrap">{v.details}</div></details>}
         <div className="flex flex-wrap gap-2">
           {v.category && <span className="px-2 py-0.5 rounded-full bg-neutral-200/70 dark:bg-[#161b22] text-xs">{v.category}</span>}
           {(v.tags||[]).map((t,i)=>(<span key={i} className="px-2 py-0.5 rounded-full border text-xs">{t}</span>))}
@@ -256,17 +276,17 @@ export default function App() {
               {dark ? t('light') : t('dark')}
             </button>
             {/* export */}
-            <button onClick={exportCSV} className="px-3 py-2 rounded-md border text-sm flex items-center gap-1">
+            <button onClick={()=>exportCSV()} className="px-3 py-2 rounded-md border text-sm flex items-center gap-1">
               <Download className="h-4 w-4" /> {t('export')}
             </button>
             {/* reset */}
-            <button onClick={()=>{ setQuery(''); setCategory('all'); setTag('all'); setSortBy('alpha'); }} className="px-3 py-2 rounded-md border text-sm flex items-center gap-1">
+            <button onClick={()=>{ setQuery(''); setCategory('all'); setTag('all'); setSortBy('alpha'); setFavOnly(false); }} className="px-3 py-2 rounded-md border text-sm flex items-center gap-1">
               <RotateCcw className="h-4 w-4" /> {t('reset')}
             </button>
           </div>
         </header>
 
-        {/* Import section */}
+        {/* Import */}
         <section className="mt-4">
           <div className="rounded-2xl border p-4 shadow bg-white dark:bg-[#161b22] dark:border-[#30363d]">
             <div className="text-sm font-semibold mb-2">{t('dataImport')}</div>
@@ -280,7 +300,7 @@ export default function App() {
                   <LinkIcon className="h-4 w-4"/> {t('importBtn')}
                 </button>
                 <button className="px-3 py-2 rounded-md border text-sm" onClick={async()=>{
-                  const sample = "zh_title,en_title,zh_def,en_def,category,tags\n演绎法,Deduction,从一般到特殊的推理,Reasoning from general to specific,逻辑学,哲学;课堂\n";
+                  const sample = "zh_title,en_title,zh_def,en_def,category,tags\\n演绎法,Deduction,从一般到特殊的推理,Reasoning from general to specific,逻辑学,哲学;课堂\\n";
                   const out = await parseCSVText(sample); setData(out); toast(uiLang==='zh'?'已载入示例':'Sample loaded');
                 }}>{t('sampleBtn')}</button>
               </div>
@@ -307,6 +327,9 @@ export default function App() {
               <option value="recent">{t('sortRecent')}</option>
               <option value="freq">{t('sortFreq')}</option>
             </ThemedSelectTrigger>
+            <label className="inline-flex items-center gap-2 text-sm ml-2">
+              <input type="checkbox" checked={favOnly} onChange={(e)=> setFavOnly(e.target.checked)} /> {t('favOnly')}
+            </label>
           </div>
           <div className="flex items-center gap-2">
             <label className="inline-flex items-center gap-2 text-sm">
@@ -315,18 +338,47 @@ export default function App() {
           </div>
         </section>
 
-        {/* List mode */}
+        {/* List mode with flip and favorite */}
         {!flashMode && (
           <section className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <AnimatePresence>
-              {(filtered.length ? filtered : data).map((v, i) => (
-                <motion.div key={v.id} layout initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
-                  <div className={`h-full p-4 rounded-2xl border shadow ${pickPalette(i)} dark:bg-[#161b22] dark:border-[#30363d]`}>
-                    {renderFront(v)}
-                    <div className="mt-2">{renderBack(v)}</div>
-                  </div>
-                </motion.div>
-              ))}
+              {(filtered.length ? filtered : data).map((v, i) => {
+                const flipped = !!flipOpen[v.id];
+                const starred = !!favs[v.id];
+                return (
+                  <motion.div key={v.id} layout initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
+                    <div className={`relative h-full p-4 rounded-2xl border shadow ${pickPalette(i)} dark:bg-[#161b22] dark:border-[#30363d]`}>
+                      <button
+                        className={`absolute right-3 top-3 p-1 rounded-md border text-xs flex items-center gap-1 ${starred?'bg-yellow-200/70 dark:bg-yellow-300/20':''}`}
+                        title={starred ? t('starred') : t('unstarred')}
+                        onClick={(e)=> { e.stopPropagation(); toggleFav(v.id); }}
+                      >
+                        <Star className={`h-4 w-4 ${starred? 'fill-yellow-400 text-yellow-500 dark:fill-yellow-300 dark:text-yellow-300':''}`} />
+                      </button>
+
+                      <div
+                        className="cursor-pointer select-none"
+                        onClick={()=> toggleFlip(v.id)}
+                        title={flipped ? (t('hideBack')) : (t('showBack'))}
+                      >
+                        <motion.div
+                          key={String(flipped)}
+                          initial={{ rotateY: 180, opacity: 0 }}
+                          animate={{ rotateY: 0, opacity: 1 }}
+                          transition={{ duration: 0.35 }}
+                          className="min-h-[140px]"
+                        >
+                          {!flipped ? (
+                            <div className="space-y-2">{renderFront(v)}</div>
+                          ) : (
+                            <div className="space-y-2">{renderBack(v)}</div>
+                          )}
+                        </motion.div>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
             </AnimatePresence>
           </section>
         )}

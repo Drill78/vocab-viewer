@@ -1,3 +1,3 @@
-zh_title,en_title,zh_def,en_def,category,tags
-演绎法,Deduction,从一般到特殊的推理,Reasoning from general to specific,逻辑学,哲学;课堂
-归纳法,Induction,由特殊到一般的推理,Generalization from cases to rule,科学方法,哲学;课堂
+zh_title,en_title,zh_def,en_def,category,tags,example,details
+演绎法,Deduction,从一般到特殊的推理,Reasoning from general to specific,逻辑学,哲学;课堂,苏格拉底是人…;凡人皆会死…;所以…,三段论是典型形式
+归纳法,Induction,由特殊到一般的推理,Generalization from cases to rule,科学方法,哲学;课堂,观察到多只白天鹅…,与经验法有关

@@ -1,31 +1,16 @@
 
-# vocab-viewer v3.2
+# vocab-viewer v3.3
 
-- 完整功能：CSV 导入（本地/直链）、导出、搜索、类别/标签筛选、排序、抽认卡模式；
-- 主题：默认白底；夜间为 GitHub Dark 风格；输入框/下拉自适应主题；
-- 文案：UI 语言中/英（按钮切换），内容语言（仅中/仅英/双语）；
-- 数据：默认从 `/public/data/vocab.csv` 加载；根目录含 `vocab_template.csv`。
+**新增**：星标收藏（持久化）、列表卡片点击翻转（显示详情）、抽认卡模式保留。UI 语言独立切换；输入/下拉随明暗主题更新。
 
-## 部署到 Vercel
-1. 上传本项目到 GitHub 仓库；
-2. Vercel 导入仓库，构建命令 `npm run build`，输出目录 `dist`；
-3. 部署成功后访问 `https://*.vercel.app`。
+## 部署
+- 上传到 GitHub；Vercel 导入 → `npm run build` → 输出 `dist`；
+- 默认读取 `/public/data/vocab.csv`；根目录有 `vocab_template.csv`。
 
-## CSV 表头（可选，支持中文/英文等同义别名）
-- 标题/释义（至少一边存在即可显示）：
-  - 中文标题：`zh_title` / `中文标题` / `标题`
-  - 英文标题：`en_title` / `term` / `term_en` / `英文标题`
-  - 中文释义：`zh_def` / `中文释义` / `释义` / `definition_cn`
-  - 英文释义：`en_def` / `definition` / `meaning` / `英文释义`
-- 分类：`category` / `类别`
-- 标签：`tags` / `标签`（多个用分号 `;`）
-- 例句：`example` / `例句`
-- 详情：`details` / `背景` / `备注`
-- 图片：`images` / `图片`（多个用分号 `;`）
-- 频率权重：`frequency` / `freq` / `权重`
-
-## 教学建议
-- 老师只需编辑 `public/data/vocab.csv`（UTF-8）并 push，Vercel 自动更新；
-- 或用“数据导入”从 GitHub Raw 链接导入试读；
-- 学生直接访问网址即可查看。
+## 使用要点
+- ⭐ 星标：列表卡片右上角点击星形；“只看星标”开关可过滤。
+- 🔁 卡片翻转：点击卡片主体即可在正/背面切换；背面可展开“详情”。
+- 🧠 抽认卡：勾选“抽认卡模式”；下一张/显示背面；支持排序/筛选后再学习。
+- 🌐 语言：UI（中/英）与内容（仅中/仅英/双语）分开控制。
+- 🎨 主题：默认白底；夜间 GitHub Dark。
 

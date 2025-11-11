@@ -4,7 +4,7 @@ export type UILang = 'zh' | 'en';
 export const i18n = {
   zh: {
     title: "词汇表 · Vocabulary",
-    subtitle: "低饱和卡片 · 明亮默认主题 · 中英切换 · 类别/标签筛选 · 抽认卡模式",
+    subtitle: "低饱和卡片 · 明亮默认主题 · 中英切换 · 类别/标签筛选 · 抽认卡模式 · 星标收藏",
     dataImport: "数据导入",
     importFromLink: "或粘贴 CSV 直链（GitHub Raw / 公网直链）",
     importBtn: "导入",
@@ -33,11 +33,14 @@ export const i18n = {
     count: "共",
     item: "项 · 第",
     of: " / ",
-    empty: "暂无数据"
+    empty: "暂无数据",
+    favOnly: "只看星标",
+    starred: "已收藏",
+    unstarred: "收藏"
   },
   en: {
     title: "Vocabulary · Viewer",
-    subtitle: "Low-saturation cards · Light by default · Bilingual content · Category/Tag filters · Flashcards",
+    subtitle: "Low-saturation cards · Light by default · Bilingual · Category/Tag filters · Flashcards · Favorites",
     dataImport: "Data Import",
     importFromLink: "Or paste a CSV direct link (GitHub Raw / public URL)",
     importBtn: "Import",
@@ -66,6 +69,9 @@ export const i18n = {
     count: "Total",
     item: " items · ",
     of: " / ",
-    empty: "No data"
+    empty: "No data",
+    favOnly: "Favorites only",
+    starred: "Starred",
+    unstarred: "Star"
   }
 } as const;
