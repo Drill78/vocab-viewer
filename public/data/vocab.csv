@@ -1,3 +1,7 @@
 zh_title,en_title,zh_def,en_def,category,tags,example,details
 演绎法,Deduction,从一般到特殊的推理,Reasoning from general to specific,逻辑学,哲学;课堂,苏格拉底是人…;凡人皆会死…;所以…,三段论是典型形式
 归纳法,Induction,由特殊到一般的推理,Generalization from cases to rule,科学方法,哲学;课堂,观察到多只白天鹅…,与经验法有关
+溯因法, Abduction, 从观察中推测最可能的解释, Inferring the most likely explanation from observations, 逻辑学, 哲学;推理, 看到草地是湿的→昨夜可能下雨, 介于归纳与演绎之间，常用于科学假设形成
+假设检验, Hypothesis Testing, 通过数据验证假设是否成立的统计方法, Statistical method to test whether a hypothesis holds given data, 科学方法, 统计学;科研, t检验、方差分析等均属于假设检验方法, 以显著性水平和p值判断假设接受与否
+经验法, Empiricism, 强调通过经验和观察获得知识的哲学方法, Philosophy emphasizing knowledge from sensory experience, 哲学, 科学;实验, 观察→记录→总结, 与理性主义相对，科学实验基础思想
+理性主义, Rationalism, 主张理性是知识来源的哲学立场, View that reason is the chief source of knowledge, 哲学, 思想史;认知, 笛卡尔“我思故我在”, 重视逻辑与推理在认识中的作用
