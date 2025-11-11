@@ -1,7 +1,7 @@
 
-# vocab-viewer v3.42
+# vocab-viewer v3.5
 
-**新增**：星标收藏（持久化）、列表卡片点击翻转（显示详情）、抽认卡模式保留。UI 语言独立切换；输入/下拉随明暗主题更新。
+**新增**：公共库示例
 
 ## 部署
 - 上传到 GitHub；Vercel 导入 → `npm run build` → 输出 `dist`；
